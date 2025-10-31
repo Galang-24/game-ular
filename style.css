@@ -1,0 +1,30 @@
+body{
+    text-align: center;
+    background-color: green;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: rgb(255, 255, 255);
+    margin: 0;
+    padding: 20px;
+}
+canvas{
+    border: 2px solid black;
+    background: rgba(171, 180, 171, 0.523);
+
+}
+button{
+    padding: 10px 16px;
+    background-color: rgba(171, 180, 170, 0.560);
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    border: 1px solid black;
+    color: wheat;
+    
+}
+.info{
+    margin: 10px;
+}
+button:hover{
+    background-color: red;
+    color: rgb(233, 223, 223);
+}
