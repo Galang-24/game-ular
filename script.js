@@ -4,6 +4,34 @@ const ctx = canvas.getContext('2d');
 const scoreElement = document.querySelector('.score');
 const gameOverElement = document.querySelector('.gameOver');
 
+// === Tambahan: High Score & Suara ===
+let highScore = localStorage.getItem('highScore') ? parseInt(localStorage.getItem('highScore')) : 0;
+const highScoreDisplay = document.createElement('p');
+highScoreDisplay.className = 'highScore';
+highScoreDisplay.textContent = `High Score: ${highScore}`;
+document.querySelector('.info').appendChild(highScoreDisplay);
+
+// === SUARA ===
+const soundEat = new Audio("sounds/eat.mp3");
+const soundGameOver = new Audio("sounds/gameover.mp3");
+const soundPlay = new Audio("sounds/play.mp3");
+
+// === PENGATURAN SUARA ===
+soundPlay.loop = true;       // biar musik latar muter terus
+soundPlay.volume = 0.3;      // musik latar lembut
+soundEat.volume = 1.0;       // suara makan keras
+soundGameOver.volume = 0.7;  // suara game over sedang
+
+// === CEGAH AUTOPLAY ERROR ===
+let musicStarted = false;
+document.addEventListener("keydown", () => {
+    if (!musicStarted) {
+        soundPlay.play().catch(() => {}); // mulai musik pas pertama kali tekan tombol
+        musicStarted = true;
+    }
+});
+
+
 const gridSize = 20;
 const gridWidth = canvas.width / gridSize;
 const gridHeight = canvas.height / gridSize;
@@ -14,10 +42,13 @@ let direction = 'right';
 let score = 0;
 let gameRunning = true;
 
-// Fungsi menggambar game
+// Fungsi untuk menggambar game
 function draw() {
-    // Bersihkan canvas
-    ctx.fillStyle = '#1a1a1a';
+    // === Tambahan: background gradien biar nyatu warna canvas ===
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#0d0d0d');
+    gradient.addColorStop(1, '#1a1a1a');
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Gambar makanan (lingkaran merah)
@@ -34,16 +65,15 @@ function draw() {
 
     // Gambar ular
     snake.forEach((segment, index) => {
-        ctx.shadowBlur = 0;
         if (index === 0) {
             ctx.fillStyle = '#00ff99';
-            ctx.shadowColor = '#00ff99';
-            ctx.shadowBlur = 10;
         } else {
             let green = 200 - index * 5;
             ctx.fillStyle = `rgb(0, ${green > 50 ? green : 50}, 100)`;
         }
 
+        ctx.shadowColor = '#003300';
+        ctx.shadowBlur = 5;
         ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
         ctx.shadowBlur = 0;
     });
@@ -80,32 +110,47 @@ function update() {
     if (head.x === food.x && head.y === food.y) {
         score += 10;
         scoreElement.textContent = score;
+
+        // === Tambahan: update high score & suara makan ===
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('highScore', highScore);
+            highScoreDisplay.textContent = `High Score: ${highScore}`;
+        }
+
+        soundEat.currentTime = 0;
+        soundEat.play();
+
         generateFood();
     } else {
         snake.pop();
     }
 }
 
-// Fungsi buat makanan tidak muncul di badan ular
+// Fungsi untuk membuat makanan secara acak
 function generateFood() {
-    let newFood;
-    do {
-        newFood = {
-            x: Math.floor(Math.random() * gridWidth),
-            y: Math.floor(Math.random() * gridHeight)
-        };
-    } while (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
-    food = newFood;
+    food = {
+        x: Math.floor(Math.random() * gridWidth),
+        y: Math.floor(Math.random() * gridHeight)
+    };
 }
 
 // Fungsi saat game over
 function endGame() {
     gameRunning = false;
     gameOverElement.style.display = 'block';
+
+    // === Tambahan: mainkan suara game over ===
+    soundPlay.pause();
+    soundGameOver.currentTime = 0;
+    soundGameOver.play();
 }
 
 // Fungsi reset game
 function resetGame() {
+    // === Tambahan: Cegah respawn sebelum game over ===
+    if (gameRunning) return;
+
     snake = [{ x: Math.floor(gridWidth / 2), y: Math.floor(gridHeight / 2) }];
     direction = 'right';
     score = 0;
@@ -113,6 +158,12 @@ function resetGame() {
     gameRunning = true;
     gameOverElement.style.display = 'none';
     generateFood();
+
+    // === Tambahan: restart musik ===
+    soundGameOver.pause();
+    soundGameOver.currentTime = 0;
+    soundPlay.currentTime = 0;
+    soundPlay.play();
 }
 
 // Fungsi game loop
@@ -121,17 +172,13 @@ function gameLoop() {
     draw();
 }
 
-// Kontrol arah & restart dengan keyboard
+// Kontrol arah dengan keyboard
 document.addEventListener('keydown', (e) => {
-    if (!gameRunning && e.key === ' ') {
-        resetGame();
-        return;
-    }
-
     if (e.key === 'ArrowUp' && direction !== 'down') direction = 'up';
     if (e.key === 'ArrowDown' && direction !== 'up') direction = 'down';
     if (e.key === 'ArrowLeft' && direction !== 'right') direction = 'left';
     if (e.key === 'ArrowRight' && direction !== 'left') direction = 'right';
+    if (e.key === ' ' && !gameRunning) resetGame(); // hanya bisa tekan spasi kalau mati
 });
 
 // Inisialisasi game
