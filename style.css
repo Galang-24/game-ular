@@ -1,4 +1,4 @@
-body{
+body {
     text-align: center;
     background-color: green;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
@@ -6,25 +6,30 @@ body{
     margin: 0;
     padding: 20px;
 }
-canvas{
+
+canvas {
     border: 2px solid black;
     background: rgba(171, 180, 171, 0.523);
-
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+    transition: box-shadow 0.3s ease;
 }
-button{
+
+button {
     padding: 10px 16px;
     background-color: rgba(171, 180, 170, 0.560);
     border-radius: 8px;
     cursor: pointer;
-    border: none;
     border: 1px solid black;
     color: wheat;
-    
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
-.info{
-    margin: 10px;
-}
-button:hover{
+
+button:hover {
     background-color: red;
     color: rgb(233, 223, 223);
+    transform: scale(1.05);
+}
+
+.info {
+    margin: 10px;
 }

@@ -14,10 +14,10 @@ let direction = 'right';
 let score = 0;
 let gameRunning = true;
 
-// Fungsi untuk menggambar game
+// Fungsi menggambar game
 function draw() {
     // Bersihkan canvas
-    ctx.fillStyle = '#1a1a1a'; // Warna latar belakang yang lebih elegan
+    ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Gambar makanan (lingkaran merah)
@@ -32,41 +32,22 @@ function draw() {
     );
     ctx.fill();
 
-//     function draw() {
-//     // Bersihkan canvas
-//     ctx.fillStyle = 'black';
-//     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-//     // Gambar ular
-//     ctx.fillStyle = 'blue';
-//     snake.forEach(segment => {
-//         ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
-//     });
-
-//     // Gambar makanan
-//     ctx.fillStyle = 'red';
-//     ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-// }
-
     // Gambar ular
     snake.forEach((segment, index) => {
-        // Warna kepala ular
+        ctx.shadowBlur = 0;
         if (index === 0) {
             ctx.fillStyle = '#00ff99';
+            ctx.shadowColor = '#00ff99';
+            ctx.shadowBlur = 10;
         } else {
-            // Gradasi warna tubuh
             let green = 200 - index * 5;
             ctx.fillStyle = `rgb(0, ${green > 50 ? green : 50}, 100)`;
         }
 
-        // Efek bayangan untuk tubuh ular
-        ctx.shadowColor = '#003300';
-        ctx.shadowBlur = 5;
         ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
-        ctx.shadowBlur = 0; // Reset bayangan
+        ctx.shadowBlur = 0;
     });
 }
-
 
 // Fungsi update logika game
 function update() {
@@ -105,12 +86,16 @@ function update() {
     }
 }
 
-// Fungsi untuk membuat makanan secara acak
+// Fungsi buat makanan tidak muncul di badan ular
 function generateFood() {
-    food = {
-        x: Math.floor(Math.random() * gridWidth),
-        y: Math.floor(Math.random() * gridHeight)
-    };
+    let newFood;
+    do {
+        newFood = {
+            x: Math.floor(Math.random() * gridWidth),
+            y: Math.floor(Math.random() * gridHeight)
+        };
+    } while (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y));
+    food = newFood;
 }
 
 // Fungsi saat game over
@@ -136,8 +121,13 @@ function gameLoop() {
     draw();
 }
 
-// Kontrol arah dengan keyboard
+// Kontrol arah & restart dengan keyboard
 document.addEventListener('keydown', (e) => {
+    if (!gameRunning && e.key === ' ') {
+        resetGame();
+        return;
+    }
+
     if (e.key === 'ArrowUp' && direction !== 'down') direction = 'up';
     if (e.key === 'ArrowDown' && direction !== 'up') direction = 'down';
     if (e.key === 'ArrowLeft' && direction !== 'right') direction = 'left';
